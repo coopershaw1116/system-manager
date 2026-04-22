@@ -1,1 +1,0 @@
-System Manager is a high-performance system monitor built for the modern Linux desktop. Developed in Rust with GTK4/Libadwaita, it replaces heavy, web-based utilities with a lean, hardware-accelerated experience.
