@@ -1,0 +1,139 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adw.NavigationSplitView main_split_view {
+  sidebar: Adw.NavigationPage {
+    title: "Menu";
+    child: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {}
+      content: Gtk.ListBox sidebar_list {
+        styles ["navigation-sidebar"]
+        selection-mode: single;
+
+        Adw.ActionRow {
+          title: "Dashboard";
+          selectable: true;
+        }
+
+        Adw.ActionRow {
+          title: "Processes";
+          selectable: true;
+        }
+      };
+    };
+  };
+
+  content: Adw.NavigationPage {
+    title: "Details";
+    child: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        [title]
+        Adw.WindowTitle { title: "System Manager Pro"; }
+      }
+      content: Gtk.Stack main_stack {
+        transition-type: over_left_right;
+        hexpand: true;
+        vexpand: true;
+
+        Gtk.ScrolledWindow page_dashboard {
+          name: "page_dashboard";
+          child: Gtk.Box {
+            orientation: vertical;
+            spacing: 24;
+            margin-start: 30;
+            margin-end: 30;
+            margin-top: 30;
+            margin-bottom: 30;
+            hexpand: true;
+
+            Gtk.Label {
+              label: "CPU Core Usage";
+              halign: start;
+              styles ["heading"]
+            }
+
+            Gtk.FlowBox cpu_flow_box {
+              selection-mode: none;
+              max-children-per-line: 8;
+              column-spacing: 12;
+              row-spacing: 12;
+              hexpand: true;
+            }
+
+            Gtk.Separator {}
+
+            Gtk.Grid {
+              column-spacing: 20;
+              row-spacing: 20;
+              column-homogeneous: true;
+
+              Gtk.Box {
+                layout { row: 0; column: 0; }
+                orientation: vertical;
+                spacing: 8;
+                Gtk.Label { label: "Memory (RAM)"; halign: start; styles ["caption-heading"] }
+                Gtk.DrawingArea ram_graph { height-request: 100; hexpand: true; styles ["card"] }
+                Gtk.Label ram_label { label: "Checking..."; halign: end; }
+              }
+
+              Gtk.Box {
+                layout { row: 0; column: 1; }
+                orientation: vertical;
+                spacing: 8;
+                Gtk.Label { label: "Disk Usage"; halign: start; styles ["caption-heading"] }
+                Gtk.DrawingArea disk_graph { height-request: 100; hexpand: true; styles ["card"] }
+                Gtk.Label disk_label { label: "Checking..."; halign: end; }
+              }
+
+              Gtk.Box {
+                layout { row: 1; column: 0; }
+                orientation: vertical;
+                spacing: 8;
+                Gtk.Label { label: "Network Inbound"; halign: start; styles ["caption-heading"] }
+                Gtk.DrawingArea net_down_graph { height-request: 100; hexpand: true; styles ["card"] }
+                Gtk.Label net_down_label { label: "0 KB/s"; halign: end; }
+              }
+
+              Gtk.Box {
+                layout { row: 1; column: 1; }
+                orientation: vertical;
+                spacing: 8;
+                Gtk.Label { label: "Network Outbound"; halign: start; styles ["caption-heading"] }
+                Gtk.DrawingArea net_up_graph { height-request: 100; hexpand: true; styles ["card"] }
+                Gtk.Label net_up_label { label: "0 KB/s"; halign: end; }
+              }
+            }
+          };
+        }
+
+        Gtk.Box page_processes {
+          name: "page_processes";
+          orientation: vertical;
+          hexpand: true;
+          vexpand: true;
+          
+          Gtk.SearchEntry { 
+            margin-top: 10; 
+            margin-bottom: 10; 
+            margin-start: 10; 
+            margin-end: 10; 
+            placeholder-text: "Search processes..."; 
+          }
+          
+          Gtk.ScrolledWindow {
+            vexpand: true;
+            child: Gtk.ListBox process_list {
+              styles ["boxed-list"]
+              margin-top: 20;
+              margin-bottom: 20;
+              margin-start: 20;
+              margin-end: 20;
+            };
+          }
+        }
+      };
+    };
+  };
+}
