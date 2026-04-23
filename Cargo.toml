@@ -11,3 +11,4 @@ zbus_systemd = { version = "0.26000.0", features = ["systemd1"] }
 zbus = { version = "5.0", features = ["tokio"] }
 tokio = { version = "1.0", features = ["full"] }
 sysinfo = "0.33" # Current version for 2026
+libc = "0.2"

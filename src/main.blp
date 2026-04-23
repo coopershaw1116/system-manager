@@ -12,7 +12,7 @@ Adw.NavigationSplitView main_split_view {
         selection-mode: single;
 
         Adw.ActionRow {
-          title: "Dashboard";
+          title: "Resources";
           selectable: true;
         }
 
@@ -30,15 +30,15 @@ Adw.NavigationSplitView main_split_view {
       [top]
       Adw.HeaderBar {
         [title]
-        Adw.WindowTitle { title: "System Manager Pro"; }
+        Adw.WindowTitle { title: "System Manager"; }
       }
       content: Gtk.Stack main_stack {
         transition-type: over_left_right;
         hexpand: true;
         vexpand: true;
 
-        Gtk.ScrolledWindow page_dashboard {
-          name: "page_dashboard";
+        Gtk.ScrolledWindow page_resources{
+          name: "page_resources";
           child: Gtk.Box {
             orientation: vertical;
             spacing: 24;
@@ -49,7 +49,7 @@ Adw.NavigationSplitView main_split_view {
             hexpand: true;
 
             Gtk.Label {
-              label: "CPU Core Usage";
+              label: "CPU Cores";
               halign: start;
               styles ["heading"]
             }
@@ -57,8 +57,8 @@ Adw.NavigationSplitView main_split_view {
             Gtk.FlowBox cpu_flow_box {
               selection-mode: none;
               max-children-per-line: 8;
-              column-spacing: 12;
-              row-spacing: 12;
+              column-spacing: 8;
+              row-spacing: 8;
               hexpand: true;
             }
 
@@ -73,13 +73,22 @@ Adw.NavigationSplitView main_split_view {
                 layout { row: 0; column: 0; }
                 orientation: vertical;
                 spacing: 8;
+                Gtk.Label { label: "CPU Usage"; halign: start; styles ["caption-heading"] }
+                Gtk.DrawingArea cpu_graph { height-request: 100; hexpand: true; styles ["card"] }
+                Gtk.Label cpu_label { label: "Checking..."; halign: end; }
+              }
+
+              Gtk.Box {
+                layout { row: 0; column: 1; }
+                orientation: vertical;
+                spacing: 8;
                 Gtk.Label { label: "Memory (RAM)"; halign: start; styles ["caption-heading"] }
                 Gtk.DrawingArea ram_graph { height-request: 100; hexpand: true; styles ["card"] }
                 Gtk.Label ram_label { label: "Checking..."; halign: end; }
               }
 
               Gtk.Box {
-                layout { row: 0; column: 1; }
+                layout { row: 1; column: 0; }
                 orientation: vertical;
                 spacing: 8;
                 Gtk.Label { label: "Disk Usage"; halign: start; styles ["caption-heading"] }
@@ -88,7 +97,7 @@ Adw.NavigationSplitView main_split_view {
               }
 
               Gtk.Box {
-                layout { row: 1; column: 0; }
+                layout { row: 1; column: 1; }
                 orientation: vertical;
                 spacing: 8;
                 Gtk.Label { label: "Network Inbound"; halign: start; styles ["caption-heading"] }
@@ -97,13 +106,39 @@ Adw.NavigationSplitView main_split_view {
               }
 
               Gtk.Box {
-                layout { row: 1; column: 1; }
+                layout { row: 2; column: 0; }
                 orientation: vertical;
                 spacing: 8;
                 Gtk.Label { label: "Network Outbound"; halign: start; styles ["caption-heading"] }
                 Gtk.DrawingArea net_up_graph { height-request: 100; hexpand: true; styles ["card"] }
                 Gtk.Label net_up_label { label: "0 KB/s"; halign: end; }
               }
+            }
+
+            Gtk.Separator {}
+
+            Gtk.Label {
+              label: "System Information";
+              halign: start;
+              styles ["heading"]
+            }
+
+            Gtk.Grid {
+              column-spacing: 16;
+              row-spacing: 8;
+              hexpand: true;
+
+              Gtk.Label { label: "System Uptime:"; halign: start; styles ["dim-label"] }
+              Gtk.Label uptime_label { label: "Loading…"; halign: start; wrap: true; }
+
+              Gtk.Label { label: "CPU Frequency:"; halign: start; styles ["dim-label"] }
+              Gtk.Label cpu_freq_label { label: "Loading…"; halign: start; wrap: true; }
+
+              Gtk.Label { label: "Operating System:"; halign: start; styles ["dim-label"] }
+              Gtk.Label os_label { label: "Loading…"; halign: start; wrap: true; }
+
+              Gtk.Label { label: "Kernel Version:"; halign: start; styles ["dim-label"] }
+              Gtk.Label kernel_label { label: "Loading…"; halign: start; wrap: true; }
             }
           };
         }

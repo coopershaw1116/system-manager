@@ -1,10 +1,13 @@
 use adw::prelude::*;
-use relm4::factory::FactoryVecDeque;
 use relm4::prelude::*;
+use relm4::factory::FactoryVecDeque;
 use sysinfo::{System, Networks, Disks, Signal, Pid};
 use std::time::Duration;
 use std::collections::VecDeque;
 use relm4::gtk::glib;
+use std::fs;
+use std::ffi::CStr;
+use libc::{uname, utsname};
 
 const MAX_HISTORY: usize = 60;
 
@@ -62,7 +65,7 @@ impl FactoryComponent for CoreModel {
             append = &gtk::Label { set_label: &format!("Core {}", self.index), set_halign: gtk::Align::Start, add_css_class: "caption" },
             #[name = "graph"]
             append = &gtk::DrawingArea {
-                set_height_request: 60, set_width_request: 120,
+                set_height_request: 50, set_width_request: 100,
                 #[watch]
                 set_draw_func: {
                     let history = self.history.clone();
@@ -85,10 +88,16 @@ struct AppWidgets {
     net_down_label: gtk::Label,
     net_up_label: gtk::Label,
     disk_label: gtk::Label,
+    cpu_label: gtk::Label,
     ram_graph: gtk::DrawingArea,
     net_down_graph: gtk::DrawingArea,
     net_up_graph: gtk::DrawingArea,
     disk_graph: gtk::DrawingArea,
+    cpu_graph: gtk::DrawingArea,
+    uptime_label: gtk::Label,
+    cpu_freq_label: gtk::Label,
+    os_label: gtk::Label,
+    kernel_label: gtk::Label,
 }
 
 struct AppModel {
@@ -99,6 +108,7 @@ struct AppModel {
     net_down_history: VecDeque<f64>,
     net_up_history: VecDeque<f64>,
     disk_history: VecDeque<f64>,
+    cpu_history: VecDeque<f64>,
     cpu_cores: FactoryVecDeque<CoreModel>,
     processes: FactoryVecDeque<ProcessModel>,
     widgets: AppWidgets,
@@ -130,7 +140,7 @@ impl Component for AppModel {
         root.set_content(Some(&main_view));
         root.set_default_width(1000);
         root.set_default_height(800);
-        root.set_title(Some("System Manager Pro"));
+        root.set_title(Some("System Manager"));
 
         let main_stack: gtk::Stack = builder.object("main_stack").expect("Could not find main_stack");
         let sidebar_list: gtk::ListBox = builder.object("sidebar_list").expect("Could not find sidebar_list");
@@ -154,10 +164,16 @@ impl Component for AppModel {
             net_down_label: builder.object("net_down_label").unwrap(),
             net_up_label: builder.object("net_up_label").unwrap(),
             disk_label: builder.object("disk_label").unwrap(),
+            cpu_label: builder.object("cpu_label").unwrap(),
             ram_graph: builder.object("ram_graph").unwrap(),
             net_down_graph: builder.object("net_down_graph").unwrap(),
             net_up_graph: builder.object("net_up_graph").unwrap(),
             disk_graph: builder.object("disk_graph").unwrap(),
+            cpu_graph: builder.object("cpu_graph").unwrap(),
+            uptime_label: builder.object("uptime_label").unwrap(),
+            cpu_freq_label: builder.object("cpu_freq_label").unwrap(),
+            os_label: builder.object("os_label").unwrap(),
+            kernel_label: builder.object("kernel_label").unwrap(),
         };
 
         let mut model = AppModel {
@@ -166,6 +182,7 @@ impl Component for AppModel {
             net_down_history: VecDeque::from(vec![0.0; MAX_HISTORY]),
             net_up_history: VecDeque::from(vec![0.0; MAX_HISTORY]),
             disk_history: VecDeque::from(vec![0.0; MAX_HISTORY]),
+            cpu_history: VecDeque::from(vec![0.0; MAX_HISTORY]),
             cpu_cores, processes,
             widgets,
         };
@@ -188,11 +205,11 @@ impl Component for AppModel {
         match msg {
             AppMsg::SwitchPage(idx) => {
                 // The index corresponds to the row order in your sidebar_list
-                // Index 0 = Dashboard, Index 1 = Processes
+                // Index 0 = Resources, Index 1 = Processes
                 let target_page = match idx {
-                    0 => "page_dashboard",
+                    0 => "page_resources",
                     1 => "page_processes",
-                    _ => "page_dashboard",
+                    _ => "page_resources",
                 };
 
                 // Switch the stack view
@@ -239,7 +256,7 @@ impl Component for AppModel {
                     }
                 }
 
-                // 4. Update History Buffers (Network/RAM/Disk)
+                // 4. Update History Buffers (Network/RAM/Disk/CPU)
                 let mut total_down = 0.0;
                 let mut total_up = 0.0;
                 for (_, data) in &self.networks {
@@ -259,8 +276,12 @@ impl Component for AppModel {
                 }
                 self.disk_history.pop_front(); self.disk_history.push_back(disk_pct);
 
+                let total_cpu = self.sys.cpus().iter().map(|c| c.cpu_usage()).sum::<f32>() / self.sys.cpus().len() as f32;
+                self.cpu_history.pop_front(); self.cpu_history.push_back(total_cpu as f64);
+
                 // 5. Update UI Widgets
                 let w = &self.widgets;
+                w.cpu_label.set_label(&format!("{:.1}%", total_cpu));
                 w.net_down_label.set_label(&format!("{:.1} KB/s", total_down));
                 w.net_up_label.set_label(&format!("{:.1} KB/s", total_up));
                 w.ram_label.set_label(&format!("{:.1} / {:.1} GB", 
@@ -269,7 +290,32 @@ impl Component for AppModel {
                 ));
                 w.disk_label.set_label(&format!("{:.1}% Used", disk_pct));
                 
+                // Update system info labels
+                if let Ok(uptime_str) = fs::read_to_string("/proc/uptime") {
+                    if let Some(seconds_str) = uptime_str.split_whitespace().next() {
+                        if let Ok(seconds) = seconds_str.parse::<f64>() {
+                            let hours = (seconds / 3600.0) as u64;
+                            let mins = ((seconds % 3600.0) / 60.0) as u64;
+                            w.uptime_label.set_label(&format!("{}h {}m", hours, mins));
+                        }
+                    }
+                }
+                let freq = self.sys.cpus().first().map(|c| c.frequency()).unwrap_or(0);
+                w.cpu_freq_label.set_label(&format!("{} MHz", freq));
+                
+                let mut uts = unsafe { std::mem::zeroed::<utsname>() };
+                if unsafe { uname(&mut uts) } == 0 {
+                    let sysname = unsafe { CStr::from_ptr(uts.sysname.as_ptr()) }.to_string_lossy();
+                    let release = unsafe { CStr::from_ptr(uts.release.as_ptr()) }.to_string_lossy();
+                    w.os_label.set_label(&sysname);
+                    w.kernel_label.set_label(&release);
+                }
+                
                 // Redraw graphs with updated history
+                let h_cpu = self.cpu_history.clone();
+                w.cpu_graph.set_draw_func(move |_, cr, width, height| 
+                    draw_graph(cr, width as f64, height as f64, &h_cpu, (0.2, 0.6, 1.0), true));
+
                 let h_down = self.net_down_history.clone();
                 w.net_down_graph.set_draw_func(move |_, cr, width, height| 
                     draw_graph(cr, width as f64, height as f64, &h_down, (0.1, 0.6, 0.8), false));
@@ -287,6 +333,7 @@ impl Component for AppModel {
                     draw_graph(cr, width as f64, height as f64, &h_disk, (0.5, 0.2, 0.8), true));
                 
                 // Trigger the actual draw
+                w.cpu_graph.queue_draw();
                 w.net_down_graph.queue_draw(); 
                 w.net_up_graph.queue_draw();
                 w.ram_graph.queue_draw();

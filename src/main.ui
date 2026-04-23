@@ -23,7 +23,7 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                 <property name="selection-mode">1</property>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Dashboard</property>
+                    <property name="title">Resources</property>
                     <property name="selectable">true</property>
                   </object>
                 </child>
@@ -48,7 +48,7 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
               <object class="AdwHeaderBar">
                 <child type="title">
                   <object class="AdwWindowTitle">
-                    <property name="title">System Manager Pro</property>
+                    <property name="title">System Manager</property>
                   </object>
                 </child>
               </object>
@@ -59,8 +59,8 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                 <property name="hexpand">true</property>
                 <property name="vexpand">true</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="page_dashboard">
-                    <property name="name">page_dashboard</property>
+                  <object class="GtkScrolledWindow" id="page_resources">
+                    <property name="name">page_resources</property>
                     <property name="child">
                       <object class="GtkBox">
                         <property name="orientation">1</property>
@@ -72,7 +72,7 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                         <property name="hexpand">true</property>
                         <child>
                           <object class="GtkLabel">
-                            <property name="label">CPU Core Usage</property>
+                            <property name="label">CPU Cores</property>
                             <property name="halign">1</property>
                             <style>
                               <class name="heading"/>
@@ -83,8 +83,8 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                           <object class="GtkFlowBox" id="cpu_flow_box">
                             <property name="selection-mode">0</property>
                             <property name="max-children-per-line">8</property>
-                            <property name="column-spacing">12</property>
-                            <property name="row-spacing">12</property>
+                            <property name="column-spacing">8</property>
+                            <property name="row-spacing">8</property>
                             <property name="hexpand">true</property>
                           </object>
                         </child>
@@ -101,6 +101,40 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                                 <layout>
                                   <property name="row">0</property>
                                   <property name="column">0</property>
+                                </layout>
+                                <property name="orientation">1</property>
+                                <property name="spacing">8</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">CPU Usage</property>
+                                    <property name="halign">1</property>
+                                    <style>
+                                      <class name="caption-heading"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkDrawingArea" id="cpu_graph">
+                                    <property name="height-request">100</property>
+                                    <property name="hexpand">true</property>
+                                    <style>
+                                      <class name="card"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="cpu_label">
+                                    <property name="label">Checking...</property>
+                                    <property name="halign">2</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <layout>
+                                  <property name="row">0</property>
+                                  <property name="column">1</property>
                                 </layout>
                                 <property name="orientation">1</property>
                                 <property name="spacing">8</property>
@@ -133,8 +167,8 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                             <child>
                               <object class="GtkBox">
                                 <layout>
-                                  <property name="row">0</property>
-                                  <property name="column">1</property>
+                                  <property name="row">1</property>
+                                  <property name="column">0</property>
                                 </layout>
                                 <property name="orientation">1</property>
                                 <property name="spacing">8</property>
@@ -168,7 +202,7 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                               <object class="GtkBox">
                                 <layout>
                                   <property name="row">1</property>
-                                  <property name="column">0</property>
+                                  <property name="column">1</property>
                                 </layout>
                                 <property name="orientation">1</property>
                                 <property name="spacing">8</property>
@@ -201,8 +235,8 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                             <child>
                               <object class="GtkBox">
                                 <layout>
-                                  <property name="row">1</property>
-                                  <property name="column">1</property>
+                                  <property name="row">2</property>
+                                  <property name="column">0</property>
                                 </layout>
                                 <property name="orientation">1</property>
                                 <property name="spacing">8</property>
@@ -230,6 +264,89 @@ corresponding .blp file and regenerate this file with blueprint-compiler.
                                     <property name="halign">2</property>
                                   </object>
                                 </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparator"></object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">System Information</property>
+                            <property name="halign">1</property>
+                            <style>
+                              <class name="heading"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkGrid">
+                            <property name="column-spacing">16</property>
+                            <property name="row-spacing">8</property>
+                            <property name="hexpand">true</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">System Uptime:</property>
+                                <property name="halign">1</property>
+                                <style>
+                                  <class name="dim-label"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="uptime_label">
+                                <property name="label">Loading…</property>
+                                <property name="halign">1</property>
+                                <property name="wrap">true</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">CPU Frequency:</property>
+                                <property name="halign">1</property>
+                                <style>
+                                  <class name="dim-label"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="cpu_freq_label">
+                                <property name="label">Loading…</property>
+                                <property name="halign">1</property>
+                                <property name="wrap">true</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Operating System:</property>
+                                <property name="halign">1</property>
+                                <style>
+                                  <class name="dim-label"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="os_label">
+                                <property name="label">Loading…</property>
+                                <property name="halign">1</property>
+                                <property name="wrap">true</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Kernel Version:</property>
+                                <property name="halign">1</property>
+                                <style>
+                                  <class name="dim-label"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="kernel_label">
+                                <property name="label">Loading…</property>
+                                <property name="halign">1</property>
+                                <property name="wrap">true</property>
                               </object>
                             </child>
                           </object>
